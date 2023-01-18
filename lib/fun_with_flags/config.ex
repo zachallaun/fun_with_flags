@@ -69,7 +69,7 @@ defmodule FunWithFlags.Config do
   # If we're not using the cache, then don't bother with
   # the 2-level logic in the default Store module.
   #
-  def store_module_determined_at_compile_time do
+  def store do
     cache_conf = Keyword.merge(
       @default_cache_config,
       @compile_time_cache_config
@@ -87,7 +87,7 @@ defmodule FunWithFlags.Config do
   @compile_time_persistence_config Application.compile_env(:fun_with_flags, :persistence, [])
 
 
-  def ecto_table_name_determined_at_compile_time do
+  def ecto_table_name do
     pers_conf = Keyword.merge(
       @default_persistence_config,
       @compile_time_persistence_config

@@ -85,12 +85,12 @@ defmodule FunWithFlags.ConfigTest do
 
 
   @tag :integration
-  test "store_module_determined_at_compile_time()" do
+  test "store()" do
     # This is not great, but testing compile time stuff is tricky.
     if Config.cache?() do
-      assert FunWithFlags.Store = Config.store_module_determined_at_compile_time()
+      assert FunWithFlags.Store = Config.store()
     else
-      assert FunWithFlags.SimpleStore = Config.store_module_determined_at_compile_time()
+      assert FunWithFlags.SimpleStore = Config.store()
     end
   end
 
@@ -133,9 +133,9 @@ defmodule FunWithFlags.ConfigTest do
     end
   end
 
-  describe "ecto_table_name_determined_at_compile_time()" do
+  describe "ecto_table_name()" do
     test "it defaults to \"fun_with_flags_toggles\"" do
-      assert Config.ecto_table_name_determined_at_compile_time() == "fun_with_flags_toggles"
+      assert Config.ecto_table_name() == "fun_with_flags_toggles"
     end
   end
 

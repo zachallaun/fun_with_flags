@@ -27,8 +27,6 @@ defmodule FunWithFlags do
 
   alias FunWithFlags.{Config, Flag, Gate}
 
-  @store FunWithFlags.Config.store_module_determined_at_compile_time()
-
   @type options :: Keyword.t
 
 
@@ -74,7 +72,7 @@ defmodule FunWithFlags do
   def enabled?(flag_name, options \\ [])
 
   def enabled?(flag_name, []) when is_atom(flag_name) do
-    {:ok, flag} = @store.lookup(flag_name)
+    {:ok, flag} = Config.store().lookup(flag_name)
     Flag.enabled?(flag)
   end
 
@@ -83,7 +81,7 @@ defmodule FunWithFlags do
   end
 
   def enabled?(flag_name, [for: item]) when is_atom(flag_name) do
-    {:ok, flag} = @store.lookup(flag_name)
+    {:ok, flag} = Config.store().lookup(flag_name)
     Flag.enabled?(flag, for: item)
   end
 
@@ -179,7 +177,7 @@ defmodule FunWithFlags do
 
   def enable(flag_name, []) when is_atom(flag_name) do
     gate = Gate.new(:boolean, true)
-    case @store.put(flag_name, gate) do
+    case Config.store().put(flag_name, gate) do
       {:ok, flag} -> verify(flag)
       error -> error
     end
@@ -191,7 +189,7 @@ defmodule FunWithFlags do
 
   def enable(flag_name, [for_actor: actor]) when is_atom(flag_name) do
     gate = Gate.new(:actor, actor, true)
-    case @store.put(flag_name, gate) do
+    case Config.store().put(flag_name, gate) do
       {:ok, flag} -> verify(flag, for: actor)
       error -> error
     end
@@ -204,7 +202,7 @@ defmodule FunWithFlags do
 
   def enable(flag_name, [for_group: group_name]) when is_atom(flag_name) do
     gate = Gate.new(:group, group_name, true)
-    case @store.put(flag_name, gate) do
+    case Config.store().put(flag_name, gate) do
       {:ok, _flag} -> {:ok, true}
       error -> error
     end
@@ -213,7 +211,7 @@ defmodule FunWithFlags do
 
   def enable(flag_name, [for_percentage_of: {:time, ratio}]) when is_atom(flag_name) do
     gate = Gate.new(:percentage_of_time, ratio)
-    case @store.put(flag_name, gate) do
+    case Config.store().put(flag_name, gate) do
       {:ok, _flag} -> {:ok, true}
       error -> error
     end
@@ -221,7 +219,7 @@ defmodule FunWithFlags do
 
   def enable(flag_name, [for_percentage_of: {:actors, ratio}]) when is_atom(flag_name) do
     gate = Gate.new(:percentage_of_actors, ratio)
-    case @store.put(flag_name, gate) do
+    case Config.store().put(flag_name, gate) do
       {:ok, _flag} -> {:ok, true}
       error -> error
     end
@@ -311,7 +309,7 @@ defmodule FunWithFlags do
 
   def disable(flag_name, []) when is_atom(flag_name) do
     gate = Gate.new(:boolean, false)
-    case @store.put(flag_name, gate) do
+    case Config.store().put(flag_name, gate) do
       {:ok, flag} -> verify(flag)
       error -> error
     end
@@ -323,7 +321,7 @@ defmodule FunWithFlags do
 
   def disable(flag_name, [for_actor: actor]) when is_atom(flag_name) do
     gate = Gate.new(:actor, actor, false)
-    case @store.put(flag_name, gate) do
+    case Config.store().put(flag_name, gate) do
       {:ok, flag} -> verify(flag, for: actor)
       error -> error
     end
@@ -335,7 +333,7 @@ defmodule FunWithFlags do
 
   def disable(flag_name, [for_group: group_name]) when is_atom(flag_name) do
     gate = Gate.new(:group, group_name, false)
-    case @store.put(flag_name, gate) do
+    case Config.store().put(flag_name, gate) do
       {:ok, _flag} -> {:ok, false}
       error -> error
     end
@@ -418,7 +416,7 @@ defmodule FunWithFlags do
   def clear(flag_name, options \\ [])
 
   def clear(flag_name, []) when is_atom(flag_name) do
-    case @store.delete(flag_name) do
+    case Config.store().delete(flag_name) do
       {:ok, _flag} -> :ok
       error -> error
     end
@@ -453,7 +451,7 @@ defmodule FunWithFlags do
   end
 
   defp _clear_gate(flag_name, gate) do
-    case @store.delete(flag_name, gate) do
+    case Config.store().delete(flag_name, gate) do
       {:ok, _flag} -> :ok
       error -> error
     end
@@ -516,12 +514,4 @@ defmodule FunWithFlags do
   defp verify(flag, [for: data]) do
     {:ok, Flag.enabled?(flag, for: data)}
   end
-
-  # Used in some tests and to debug.
-  #
-  # Apparently calling `Config.store_module_determined_at_compile_time` even
-  # just once in a test causes all sorts of weird test failures everywhere.
-  #
-  @doc false
-  def compiled_store, do: @store
 end
